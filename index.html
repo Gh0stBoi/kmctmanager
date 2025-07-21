@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Tournament Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark background */
+            color: #F9FAFB; /* Light text */
+        }
+        .sidebar {
+            background-color: #1F2937; /* Slightly lighter dark for sidebar */
+        }
+        .card {
+            background-color: #1F2937;
+            border: 1px solid #374151;
+        }
+        .table-header {
+            background-color: #374151;
+        }
+        .table-row:nth-child(even) {
+            background-color: #1F2937;
+        }
+        .table-row:nth-child(odd) {
+            background-color: #263142;
+        }
+        .btn-primary {
+            background-color: #3B82F6;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #2563EB;
+        }
+        .btn-secondary {
+            background-color: #4B5563;
+            transition: background-color: 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #374151;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+        .modal-content {
+            background-color: #1F2937;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1F2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4B5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B7280;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar for Controls -->
+        <aside class="sidebar w-full md:w-72 lg:w-80 p-6 space-y-6 border-r border-gray-700 flex-shrink-0">
+            <header class="flex items-center space-x-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v1.068A8.001 8.001 0 0120 10a8 8 0 01-8 8s-2.5-1-2.5-3.5a.5.5 0 00-1 0c0 2.5-2.5 3.5-2.5 3.5s-8-4.5-8-8a8.001 8.001 0 018.932-7.932A1 1 0 0111.3 1.046zM10 12a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                </svg>
+                <h1 class="text-2xl font-bold text-white">TourneyHub</h1>
+            </header>
+            
+            <div class="space-y-4">
+                <h2 class="text-lg font-semibold text-gray-300">Controls</h2>
+                <button id="addTeamBtn" class="w-full btn-primary text-white font-semibold py-2 px-4 rounded-lg shadow-md flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    <span>Add New Team</span>
+                </button>
+                <button id="resetTournamentBtn" class="w-full btn-secondary text-white font-semibold py-2 px-4 rounded-lg shadow-md flex items-center justify-center space-x-2">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.899 2.186l-1.414 1.414A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V4a1 1 0 112 0v1.5a7.002 7.002 0 0110.001-2.828l1.414-1.414A9.002 9.002 0 004 4.101V3a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                    <span>Reset Tournament</span>
+                </button>
+            </div>
+
+            <div class="space-y-4 pt-4 border-t border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-300">Generate Fixtures</h2>
+                <div class="space-y-2">
+                    <label for="tournamentType" class="block text-sm font-medium text-gray-400">Tournament Type</label>
+                    <select id="tournamentType" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="league">League (Round Robin)</option>
+                        <option value="knockout">Knockout</option>
+                    </select>
+                </div>
+                <button id="generateFixturesBtn" class="w-full btn-primary text-white font-semibold py-2 px-4 rounded-lg shadow-md">Generate Fixtures</button>
+            </div>
+            
+             <div class="pt-4 border-t border-gray-700 text-xs text-gray-500">
+                <p>User ID: <span id="userIdDisplay" class="font-mono"></span></p>
+                <p class="mt-2">Share your User ID with friends to manage the same tournament.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            <div id="loadingIndicator" class="text-center p-10">
+                <p class="text-lg text-gray-400">Loading Tournament Data...</p>
+            </div>
+            <div id="mainContent" class="hidden">
+                <!-- Tabs -->
+                <div class="mb-6 border-b border-gray-700">
+                    <nav class="flex space-x-4" aria-label="Tabs">
+                        <button id="tab-points" class="tab-btn text-white font-medium py-3 px-4 border-b-2 border-blue-500">Points Table</button>
+                        <button id="tab-fixtures" class="tab-btn text-gray-400 hover:text-white font-medium py-3 px-4 border-b-2 border-transparent">Fixtures</button>
+                    </nav>
+                </div>
+
+                <!-- Content Panes -->
+                <div id="pane-points" class="tab-pane">
+                    <div class="card rounded-xl overflow-hidden">
+                        <div class="p-4 flex justify-between items-center">
+                            <h2 class="text-xl font-bold text-white">League Standings</h2>
+                            <div class="text-sm text-gray-400">Season 2024-25</div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-300">
+                                <thead class="text-xs text-gray-300 uppercase table-header">
+                                    <tr>
+                                        <th scope="col" class="pl-6 pr-3 py-3 w-12">Pos</th>
+                                        <th scope="col" class="px-3 py-3">Club</th>
+                                        <th scope="col" class="px-3 py-3 text-center">MP</th>
+                                        <th scope="col" class="px-3 py-3 text-center">W</th>
+                                        <th scope="col" class="px-3 py-3 text-center">D</th>
+                                        <th scope="col" class="px-3 py-3 text-center">L</th>
+                                        <th scope="col" class="px-3 py-3 text-center">GF</th>
+                                        <th scope="col" class="px-3 py-3 text-center">GA</th>
+                                        <th scope="col" class="px-3 py-3 text-center">GD</th>
+                                        <th scope="col" class="px-3 py-3 text-center font-bold">Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pointsTableBody">
+                                    <!-- Rows will be injected here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="pane-fixtures" class="tab-pane hidden">
+                    <div class="card rounded-xl overflow-hidden">
+                        <div class="p-4">
+                           <h2 class="text-xl font-bold text-white">Match Fixtures</h2>
+                        </div>
+                        <div id="fixturesContainer" class="p-4 space-y-6">
+                           <!-- Fixtures will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Team Modal -->
+    <div id="addTeamModal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="modal-content w-full max-w-md p-6 rounded-xl shadow-lg m-4">
+            <h3 class="text-xl font-bold mb-4">Add a New Team</h3>
+            <form id="addTeamForm">
+                <div class="mb-4">
+                    <label for="teamName" class="block text-sm font-medium text-gray-300 mb-1">Team Name</label>
+                    <input type="text" id="teamName" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-6">
+                    <label for="teamLogo" class="block text-sm font-medium text-gray-300 mb-1">Team Logo URL (Optional)</label>
+                    <input type="url" id="teamLogo" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="https://example.com/logo.png">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelAddTeam" class="btn-secondary text-white font-semibold py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit" class="btn-primary text-white font-semibold py-2 px-4 rounded-lg">Add Team</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enter Score Modal -->
+    <div id="enterScoreModal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="modal-content w-full max-w-md p-6 rounded-xl shadow-lg m-4">
+            <h3 class="text-xl font-bold mb-4">Enter Match Result</h3>
+            <form id="enterScoreForm">
+                <input type="hidden" id="fixtureId">
+                <div class="flex items-center justify-between space-x-4 mb-4">
+                    <div class="flex-1 text-center">
+                        <img id="modalTeam1Logo" src="" class="mx-auto h-16 w-16 object-contain mb-2 rounded-full bg-white/10 p-1">
+                        <p id="modalTeam1Name" class="font-bold"></p>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-400">vs</div>
+                    <div class="flex-1 text-center">
+                        <img id="modalTeam2Logo" src="" class="mx-auto h-16 w-16 object-contain mb-2 rounded-full bg-white/10 p-1">
+                        <p id="modalTeam2Name" class="font-bold"></p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center space-x-4">
+                    <input type="number" id="team1Score" class="w-24 text-center bg-gray-800 border border-gray-600 rounded-lg p-2 text-white text-2xl" min="0" required>
+                    <span class="text-2xl font-bold">-</span>
+                    <input type="number" id="team2Score" class="w-24 text-center bg-gray-800 border border-gray-600 rounded-lg p-2 text-white text-2xl" min="0" required>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" id="cancelScore" class="btn-secondary text-white font-semibold py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit" class="btn-primary text-white font-semibold py-2 px-4 rounded-lg">Save Score</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="modal-content w-full max-w-sm p-6 rounded-xl shadow-lg m-4">
+            <h3 id="confirmTitle" class="text-lg font-bold mb-2">Are you sure?</h3>
+            <p id="confirmMessage" class="text-gray-300 mb-6">This action cannot be undone.</p>
+            <div class="flex justify-end space-x-3">
+                <button id="confirmCancel" class="btn-secondary text-white font-semibold py-2 px-4 rounded-lg">Cancel</button>
+                <button id="confirmOk" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, writeBatch, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Configuration ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'football-tourney-default';
+
+        // --- Firebase Initialization ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- Global State ---
+        let userId = null;
+        let teamsUnsubscribe = () => {};
+        let fixturesUnsubscribe = () => {};
+        let teamsCache = new Map();
+
+        // --- UI Elements ---
+        const addTeamBtn = document.getElementById('addTeamBtn');
+        const addTeamModal = document.getElementById('addTeamModal');
+        const cancelAddTeamBtn = document.getElementById('cancelAddTeam');
+        const addTeamForm = document.getElementById('addTeamForm');
+        const pointsTableBody = document.getElementById('pointsTableBody');
+        const fixturesContainer = document.getElementById('fixturesContainer');
+        const generateFixturesBtn = document.getElementById('generateFixturesBtn');
+        const resetTournamentBtn = document.getElementById('resetTournamentBtn');
+        const enterScoreModal = document.getElementById('enterScoreModal');
+        const cancelScoreBtn = document.getElementById('cancelScore');
+        const enterScoreForm = document.getElementById('enterScoreForm');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const mainContent = document.getElementById('mainContent');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+
+        // --- Utility Functions ---
+        
+        /**
+         * Generates a simple, unique SVG logo for a team.
+         * @param {string} name - The name of the team.
+         * @returns {string} A data URL for the SVG image.
+         */
+        function generateLogo(name) {
+            const colors = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#22c55e", "#14b8a6", "#06b6d4", "#3b82f6", "#8b5cf6", "#d946ef"];
+            const charCodeSum = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const bgColor = colors[charCodeSum % colors.length];
+            const initial = name.substring(0, 2).toUpperCase();
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="${bgColor}" /><text x="50" y="55" font-size="40" fill="white" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-weight="bold">${initial}</text></svg>`;
+            return `data:image/svg+xml;base64,${btoa(svg)}`;
+        }
+
+        /**
+         * Custom confirmation dialog to replace window.confirm.
+         * @param {string} title - The title of the dialog.
+         * @param {string} message - The confirmation message.
+         * @returns {Promise<boolean>} A promise that resolves to true if confirmed, false otherwise.
+         */
+        function showConfirm(title, message) {
+            return new Promise(resolve => {
+                const confirmModal = document.getElementById('confirmModal');
+                document.getElementById('confirmTitle').textContent = title;
+                document.getElementById('confirmMessage').textContent = message;
+
+                const confirmOk = document.getElementById('confirmOk');
+                const confirmCancel = document.getElementById('confirmCancel');
+
+                const close = (value) => {
+                    confirmModal.classList.add('hidden');
+                    confirmModal.classList.remove('flex');
+                    resolve(value);
+                };
+
+                confirmOk.onclick = () => close(true);
+                confirmCancel.onclick = () => close(false);
+                
+                confirmModal.classList.remove('hidden');
+                confirmModal.classList.add('flex');
+            });
+        }
+
+        // --- Firestore Logic ---
+
+        /**
+         * Sets up real-time listeners for teams and fixtures data.
+         */
+        function setupListeners() {
+            if (!userId) return;
+            
+            loadingIndicator.style.display = 'block';
+            mainContent.style.display = 'none';
+
+            // Unsubscribe from previous listeners if they exist
+            teamsUnsubscribe();
+            fixturesUnsubscribe();
+
+            const teamsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/teams`);
+            teamsUnsubscribe = onSnapshot(teamsCollectionRef, (snapshot) => {
+                const teams = [];
+                teamsCache.clear();
+                snapshot.forEach(doc => {
+                    const teamData = { id: doc.id, ...doc.data() };
+                    teams.push(teamData);
+                    teamsCache.set(doc.id, teamData);
+                });
+                renderPointsTable(teams);
+                loadingIndicator.style.display = 'none';
+                mainContent.style.display = 'block';
+            }, (error) => {
+                console.error("Error fetching teams:", error);
+                loadingIndicator.textContent = "Error loading data. Please refresh.";
+            });
+
+            const fixturesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/fixtures`);
+            fixturesUnsubscribe = onSnapshot(fixturesCollectionRef, (snapshot) => {
+                const fixtures = [];
+                snapshot.forEach(doc => {
+                    fixtures.push({ id: doc.id, ...doc.data() });
+                });
+                renderFixtures(fixtures);
+            }, (error) => {
+                console.error("Error fetching fixtures:", error);
+            });
+        }
+
+        // --- Rendering Logic ---
+
+        /**
+         * Renders the points table based on team data.
+         * @param {Array<Object>} teams - An array of team objects.
+         */
+        function renderPointsTable(teams) {
+            // Sort teams by points, then GD, then GF
+            teams.sort((a, b) => {
+                if (b.pts !== a.pts) return b.pts - a.pts;
+                if (b.gd !== a.gd) return b.gd - a.gd;
+                if (b.gf !== a.gf) return b.gf - a.gf;
+                return a.name.localeCompare(b.name);
+            });
+
+            pointsTableBody.innerHTML = '';
+            if (teams.length === 0) {
+                pointsTableBody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-gray-400">No teams added yet. Add a team to get started!</td></tr>`;
+                return;
+            }
+
+            teams.forEach((team, index) => {
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b border-gray-700';
+                row.innerHTML = `
+                    <td class="pl-6 pr-3 py-3 font-medium text-white">${index + 1}</td>
+                    <td class="px-3 py-3">
+                        <div class="flex items-center space-x-3">
+                            <img class="h-6 w-6 rounded-full object-contain" src="${team.logoUrl}" alt="${team.name} logo" onerror="this.onerror=null;this.src='${generateLogo(team.name)}';">
+                            <span class="font-semibold">${team.name}</span>
+                        </div>
+                    </td>
+                    <td class="px-3 py-3 text-center">${team.mp}</td>
+                    <td class="px-3 py-3 text-center">${team.w}</td>
+                    <td class="px-3 py-3 text-center">${team.d}</td>
+                    <td class="px-3 py-3 text-center">${team.l}</td>
+                    <td class="px-3 py-3 text-center">${team.gf}</td>
+                    <td class="px-3 py-3 text-center">${team.ga}</td>
+                    <td class="px-3 py-3 text-center">${team.gd}</td>
+                    <td class="px-3 py-3 text-center font-bold text-white">${team.pts}</td>
+                `;
+                pointsTableBody.appendChild(row);
+            });
+        }
+        
+        /**
+         * Renders the fixtures list.
+         * @param {Array<Object>} fixtures - An array of fixture objects.
+         */
+        function renderFixtures(fixtures) {
+            fixturesContainer.innerHTML = '';
+            if (fixtures.length === 0) {
+                fixturesContainer.innerHTML = `<div class="text-center py-8 text-gray-400">No fixtures generated. Add teams and click "Generate Fixtures".</div>`;
+                return;
+            }
+
+            // Group fixtures by round
+            const fixturesByRound = fixtures.reduce((acc, fixture) => {
+                const round = fixture.round || 'Fixtures';
+                if (!acc[round]) {
+                    acc[round] = [];
+                }
+                acc[round].push(fixture);
+                return acc;
+            }, {});
+
+            Object.keys(fixturesByRound).sort().forEach(round => {
+                const roundContainer = document.createElement('div');
+                roundContainer.className = 'space-y-3';
+                
+                const roundTitle = document.createElement('h3');
+                roundTitle.className = 'text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-3';
+                roundTitle.textContent = round.startsWith('Round') ? round : `Round ${round}`;
+                roundContainer.appendChild(roundTitle);
+
+                fixturesByRound[round].forEach(fixture => {
+                    const team1 = teamsCache.get(fixture.team1Id);
+                    const team2 = teamsCache.get(fixture.team2Id);
+
+                    if (!team1 || !team2) return; // Skip if team data not loaded yet
+
+                    const fixtureCard = document.createElement('div');
+                    fixtureCard.className = 'card rounded-lg p-4 flex items-center justify-between';
+                    
+                    const played = fixture.played;
+                    const scoreOrTime = played 
+                        ? `<div class="text-2xl font-bold">${fixture.score1} - ${fixture.score2}</div>`
+                        : `<div class="text-lg font-semibold text-blue-400">vs</div>`;
+
+                    fixtureCard.innerHTML = `
+                        <div class="flex items-center space-x-4 flex-1 text-right justify-end">
+                            <span class="font-semibold text-lg">${team1.name}</span>
+                            <img src="${team1.logoUrl}" class="h-8 w-8 rounded-full object-contain bg-white/10 p-0.5">
+                        </div>
+                        <div class="px-4 text-center">
+                            ${scoreOrTime}
+                        </div>
+                        <div class="flex items-center space-x-4 flex-1">
+                            <img src="${team2.logoUrl}" class="h-8 w-8 rounded-full object-contain bg-white/10 p-0.5">
+                            <span class="font-semibold text-lg">${team2.name}</span>
+                        </div>
+                        <button class="edit-score-btn btn-secondary text-xs font-semibold py-1 px-3 rounded-md ml-4" data-fixture-id="${fixture.id}">
+                            ${played ? 'Edit' : 'Set Score'}
+                        </button>
+                    `;
+                    roundContainer.appendChild(fixtureCard);
+                });
+                fixturesContainer.appendChild(roundContainer);
+            });
+        }
+
+        // --- Event Handlers ---
+        
+        // Add Team Modal
+        addTeamBtn.addEventListener('click', () => {
+            addTeamModal.classList.remove('hidden');
+            addTeamModal.classList.add('flex');
+        });
+
+        cancelAddTeamBtn.addEventListener('click', () => {
+            addTeamModal.classList.add('hidden');
+            addTeamModal.classList.remove('flex');
+            addTeamForm.reset();
+        });
+
+        addTeamForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const teamName = document.getElementById('teamName').value.trim();
+            let teamLogo = document.getElementById('teamLogo').value.trim();
+
+            if (!teamLogo) {
+                teamLogo = generateLogo(teamName);
+            }
+
+            const newTeam = {
+                name: teamName,
+                logoUrl: teamLogo,
+                mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0
+            };
+
+            try {
+                const teamRef = doc(collection(db, `artifacts/${appId}/users/${userId}/teams`));
+                await setDoc(teamRef, newTeam);
+                addTeamForm.reset();
+                addTeamModal.classList.add('hidden');
+                addTeamModal.classList.remove('flex');
+            } catch (error) {
+                console.error("Error adding team: ", error);
+                alert("Failed to add team. Please try again.");
+            }
+        });
+
+        // Generate Fixtures
+        generateFixturesBtn.addEventListener('click', async () => {
+             const confirmed = await showConfirm(
+                "Generate Fixtures?",
+                "This will delete all existing fixtures and may reset scores if teams have changed. Are you sure?"
+            );
+            if (!confirmed) return;
+
+            const type = document.getElementById('tournamentType').value;
+            const teams = Array.from(teamsCache.values());
+
+            if (teams.length < 2) {
+                alert("You need at least 2 teams to generate fixtures.");
+                return;
+            }
+
+            let newFixtures = [];
+            if (type === 'league') {
+                // Round Robin algorithm
+                const teamIds = teams.map(t => t.id);
+                if (teamIds.length % 2 !== 0) {
+                    teamIds.push(null); // Add a bye
+                }
+                const numRounds = teamIds.length - 1;
+                const half = teamIds.length / 2;
+
+                for (let round = 0; round < numRounds; round++) {
+                    for (let i = 0; i < half; i++) {
+                        const team1Id = teamIds[i];
+                        const team2Id = teamIds[teamIds.length - 1 - i];
+                        if (team1Id && team2Id) { // Don't create fixture for a bye
+                             newFixtures.push({
+                                team1Id,
+                                team2Id,
+                                played: false,
+                                round: `Round ${round + 1}`
+                            });
+                        }
+                    }
+                    // Rotate teams for next round
+                    teamIds.splice(1, 0, teamIds.pop());
+                }
+            } else if (type === 'knockout') {
+                // Single elimination knockout
+                let teamIds = teams.map(t => t.id);
+                // Shuffle teams randomly
+                for (let i = teamIds.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [teamIds[i], teamIds[j]] = [teamIds[j], teamIds[i]];
+                }
+                for (let i = 0; i < teamIds.length; i += 2) {
+                    if (teamIds[i+1]) { // If there's a pair
+                         newFixtures.push({
+                            team1Id: teamIds[i],
+                            team2Id: teamIds[i+1],
+                            played: false,
+                            round: 'Knockout Round 1'
+                        });
+                    }
+                }
+            }
+
+            // Batch write to Firestore
+            try {
+                const fixturesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/fixtures`);
+                // First, delete old fixtures
+                const oldFixturesSnapshot = await getDocs(fixturesCollectionRef);
+                const deleteBatch = writeBatch(db);
+                oldFixturesSnapshot.forEach(doc => deleteBatch.delete(doc.ref));
+                await deleteBatch.commit();
+                
+                // Then, add new ones
+                const addBatch = writeBatch(db);
+                newFixtures.forEach(fixture => {
+                    const fixtureRef = doc(collection(db, `artifacts/${appId}/users/${userId}/fixtures`));
+                    addBatch.set(fixtureRef, fixture);
+                });
+                await addBatch.commit();
+                alert("Fixtures generated successfully!");
+                 document.getElementById('tab-fixtures').click();
+            } catch (error) {
+                console.error("Error generating fixtures: ", error);
+                alert("Failed to generate fixtures.");
+            }
+        });
+        
+        // Reset Tournament
+        resetTournamentBtn.addEventListener('click', async () => {
+            const confirmed = await showConfirm(
+                "Reset Entire Tournament?",
+                "This will delete ALL teams, fixtures, and scores. This action cannot be undone."
+            );
+            if (!confirmed) return;
+
+            try {
+                const batch = writeBatch(db);
+                const teamsSnapshot = await getDocs(collection(db, `artifacts/${appId}/users/${userId}/teams`));
+                teamsSnapshot.forEach(doc => batch.delete(doc.ref));
+                
+                const fixturesSnapshot = await getDocs(collection(db, `artifacts/${appId}/users/${userId}/fixtures`));
+                fixturesSnapshot.forEach(doc => batch.delete(doc.ref));
+
+                await batch.commit();
+                alert("Tournament has been reset.");
+            } catch (error) {
+                console.error("Error resetting tournament:", error);
+                alert("Failed to reset tournament.");
+            }
+        });
+
+        // Enter Score Modal
+        fixturesContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.edit-score-btn');
+            if (button) {
+                const fixtureId = button.dataset.fixtureId;
+                const fixtureDocRef = doc(db, `artifacts/${appId}/users/${userId}/fixtures`, fixtureId);
+                
+                getDoc(fixtureDocRef).then(docSnap => {
+                    if (docSnap.exists()) {
+                        const fixture = docSnap.data();
+                        const team1 = teamsCache.get(fixture.team1Id);
+                        const team2 = teamsCache.get(fixture.team2Id);
+
+                        document.getElementById('fixtureId').value = fixtureId;
+                        document.getElementById('modalTeam1Name').textContent = team1.name;
+                        document.getElementById('modalTeam2Name').textContent = team2.name;
+                        document.getElementById('modalTeam1Logo').src = team1.logoUrl;
+                        document.getElementById('modalTeam2Logo').src = team2.logoUrl;
+                        document.getElementById('team1Score').value = fixture.played ? fixture.score1 : '';
+                        document.getElementById('team2Score').value = fixture.played ? fixture.score2 : '';
+
+                        enterScoreModal.classList.remove('hidden');
+                        enterScoreModal.classList.add('flex');
+                    }
+                });
+            }
+        });
+
+        cancelScoreBtn.addEventListener('click', () => {
+            enterScoreModal.classList.add('hidden');
+            enterScoreModal.classList.remove('flex');
+            enterScoreForm.reset();
+        });
+
+        enterScoreForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fixtureId = document.getElementById('fixtureId').value;
+            const score1 = parseInt(document.getElementById('team1Score').value);
+            const score2 = parseInt(document.getElementById('team2Score').value);
+
+            const fixtureDocRef = doc(db, `artifacts/${appId}/users/${userId}/fixtures`, fixtureId);
+            const fixtureSnap = await getDoc(fixtureDocRef);
+            if (!fixtureSnap.exists()) return;
+
+            const fixture = fixtureSnap.data();
+            const team1Ref = doc(db, `artifacts/${appId}/users/${userId}/teams`, fixture.team1Id);
+            const team2Ref = doc(db, `artifacts/${appId}/users/${userId}/teams`, fixture.team2Id);
+            const team1Snap = await getDoc(team1Ref);
+            const team2Snap = await getDoc(team2Ref);
+            if (!team1Snap.exists() || !team2Snap.exists()) return;
+
+            const team1Data = team1Snap.data();
+            const team2Data = team2Snap.data();
+
+            const batch = writeBatch(db);
+
+            // If match was already played, revert old stats first
+            if (fixture.played) {
+                const oldScore1 = fixture.score1;
+                const oldScore2 = fixture.score2;
+                
+                team1Data.gf -= oldScore1; team1Data.ga -= oldScore2;
+                team2Data.gf -= oldScore2; team2Data.ga -= oldScore1;
+                
+                if (oldScore1 > oldScore2) { // Team 1 won
+                    team1Data.w -= 1; team1Data.pts -= 3; team2Data.l -= 1;
+                } else if (oldScore2 > oldScore1) { // Team 2 won
+                    team2Data.w -= 1; team2Data.pts -= 3; team1Data.l -= 1;
+                } else { // Draw
+                    team1Data.d -= 1; team1Data.pts -= 1;
+                    team2Data.d -= 1; team2Data.pts -= 1;
+                }
+                team1Data.mp -= 1;
+                team2Data.mp -= 1;
+            }
+
+            // Apply new stats
+            team1Data.mp += 1; team2Data.mp += 1;
+            team1Data.gf += score1; team1Data.ga += score2;
+            team2Data.gf += score2; team2Data.ga += score1;
+            
+            if (score1 > score2) { // Team 1 wins
+                team1Data.w += 1; team1Data.pts += 3; team2Data.l += 1;
+            } else if (score2 > score1) { // Team 2 wins
+                team2Data.w += 1; team2Data.pts += 3; team1Data.l += 1;
+            } else { // Draw
+                team1Data.d += 1; team1Data.pts += 1;
+                team2Data.d += 1; team2Data.pts += 1;
+            }
+            
+            team1Data.gd = team1Data.gf - team1Data.ga;
+            team2Data.gd = team2Data.gf - team2Data.ga;
+
+            // Update documents in batch
+            batch.update(team1Ref, team1Data);
+            batch.update(team2Ref, team2Data);
+            batch.update(fixtureDocRef, { played: true, score1, score2 });
+
+            try {
+                await batch.commit();
+                enterScoreForm.reset();
+                enterScoreModal.classList.add('hidden');
+                enterScoreModal.classList.remove('flex');
+            } catch (error) {
+                console.error("Error saving score: ", error);
+                alert("Failed to save score.");
+            }
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('text-white', 'border-blue-500');
+                    btn.classList.add('text-gray-400', 'border-transparent');
+                });
+                button.classList.add('text-white', 'border-blue-500');
+                button.classList.remove('text-gray-400', 'border-transparent');
+
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.add('hidden');
+                });
+                document.getElementById(`pane-${button.id.split('-')[1]}`).classList.remove('hidden');
+            });
+        });
+
+        // --- App Initialization ---
+        async function init() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userIdDisplay.textContent = userId;
+                    setupListeners();
+                } else {
+                    console.log("No user signed in.");
+                }
+            });
+
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                loadingIndicator.textContent = "Authentication Failed. Cannot load data.";
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
