@@ -62,17 +62,18 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #6B7280;
         }
+        /* Styles for the footer watermark */
         .footer-watermark {
             position: fixed;
-            top: 50%; /* Changed from 'bottom: 0;' */
-            left: 50%;
-            transform: translate(-50%, -50%); /* Added vertical centering */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust for element's own size */
             padding: 8px 12px;
-            color: #6B7280;
-            font-size: 0.75rem;
-            opacity: 0.7;
-            z-index: 10;
-            pointer-events: none;
+            color: #6B7280; /* Gray text for a watermark effect */
+            font-size: 0.75rem; /* text-xs */
+            opacity: 0.7; /* Slightly transparent */
+            z-index: 10; /* Ensure it's above most content but below modals */
+            pointer-events: none; /* Allows clicks to pass through */
         }
     </style>
 </head>
@@ -124,6 +125,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                     <span>Add New Team</span>
                 </button>
+                <button id="addFixtureBtn" class="w-full btn-primary text-white font-semibold py-2 px-4 rounded-lg shadow-md flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                    <span>Add Custom Fixture</span>
+                </button>
                 <button id="resetTournamentBtn" class="w-full btn-secondary text-white font-semibold py-2 px-4 rounded-lg shadow-md flex items-center justify-center space-x-2">
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.899 2.186l-1.414 1.414A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V4a1 1 0 112 0v1.5a7.002 7.002 0 0110.001-2.828l1.414-1.414A9.002 9.002 0 004 4.101V3a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
                     <span>Reset Tournament</span>
@@ -137,6 +142,7 @@
                     <select id="tournamentType" class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="league">League (Round Robin)</option>
                         <option value="knockout">Knockout</option>
+                        <option value="friendly">Friendly Match</option>
                     </select>
                 </div>
                 <button id="generateFixturesBtn" class="w-full btn-primary text-white font-semibold py-2 px-4 rounded-lg shadow-md">Generate Fixtures</button>
@@ -172,15 +178,15 @@
                                     <tr>
                                         <th scope="col" class="pl-6 pr-3 py-3 w-12">Pos</th>
                                         <th scope="col" class="px-3 py-3">Club</th>
-                                        <th scope="col" class="px-3 py-3 text-center">MP</th>
-                                        <th scope="col" class="px-3 py-3 text-center">W</th>
-                                        <th scope="col" class="px-3 py-3 text-center">D</th>
-                                        <th scope="col" class="px-3 py-3 text-center">L</th>
-                                        <th scope="col" class="px-3 py-3 text-center">GF</th>
-                                        <th scope="col" class="px-3 py-3 text-center">GA</th>
-                                        <th scope="col" class="px-3 py-3 text-center">GD</th>
-                                        <th scope="col" class="px-3 py-3 text-center font-bold">Pts</th>
-                                    </tr>
+                                        <th scope="col" class="px-3 py-3 text-center sortable" data-sort="mp">MP <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center sortable" data-sort="w">W <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center sortable" data-sort="d">D <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center sortable" data-sort="l">L <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center sortable" data-sort="gf">GF <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center sortable" data-sort="ga">GA <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center sortable" data-sort="gd">GD <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center font-bold sortable" data-sort="pts">Pts <span class="sort-icon"></span></th>
+                                        <th scope="col" class="px-3 py-3 text-center">Actions</th> </tr>
                                 </thead>
                                 <tbody id="pointsTableBody">
                                     </tbody>
@@ -229,6 +235,68 @@
         </div>
     </div>
 
+    <div id="editTeamModal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="modal-content w-full max-w-md p-6 rounded-xl shadow-lg m-4">
+            <h3 class="text-xl font-bold mb-4">Edit Team</h3>
+            <form id="editTeamForm">
+                <input type="hidden" id="editTeamId">
+                <div class="mb-4">
+                    <label for="editTeamName" class="block text-sm font-medium text-gray-300 mb-1">Team Name</label>
+                    <input type="text" id="editTeamName" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="editTeamLogo" class="block text-sm font-medium text-gray-300 mb-1">Team Logo URL (Optional)</label>
+                    <input type="url" id="editTeamLogo" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="https://example.com/logo.png">
+                </div>
+                <div class="mb-4">
+                    <label for="editManagerName" class="block text-sm font-medium text-gray-300 mb-1">Manager Name</label>
+                    <input type="text" id="editManagerName" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-6">
+                    <label for="editManagerPic" class="block text-sm font-medium text-gray-300 mb-1">Manager Picture URL (Optional)</label>
+                    <input type="url" id="editManagerPic" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="https://example.com/manager.png">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelEditTeam" class="btn-secondary text-white font-semibold py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit" class="btn-primary text-white font-semibold py-2 px-4 rounded-lg">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addFixtureModal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
+        <div class="modal-content w-full max-w-md p-6 rounded-xl shadow-lg m-4">
+            <h3 class="text-xl font-bold mb-4">Add Custom Fixture</h3>
+            <form id="addFixtureForm">
+                <div class="mb-4">
+                    <label for="fixtureTeam1" class="block text-sm font-medium text-gray-300 mb-1">Home Team</label>
+                    <select id="fixtureTeam1" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" required></select>
+                </div>
+                <div class="mb-4">
+                    <label for="fixtureTeam2" class="block text-sm font-medium text-gray-300 mb-1">Away Team</label>
+                    <select id="fixtureTeam2" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" required></select>
+                </div>
+                <div class="mb-4">
+                    <label for="fixtureDate" class="block text-sm font-medium text-gray-300 mb-1">Date</label>
+                    <input type="date" id="fixtureDate" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="fixtureTime" class="block text-sm font-medium text-gray-300 mb-1">Time</label>
+                    <input type="time" id="fixtureTime" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" value="19:00" required>
+                </div>
+                <div class="mb-6">
+                    <label for="fixtureRound" class="block text-sm font-medium text-gray-300 mb-1">Round/Stage Name</label>
+                    <input type="text" id="fixtureRound" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Friendly, Quarter-Finals">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelAddFixture" class="btn-secondary text-white font-semibold py-2 px-4 rounded-lg">Cancel</button>
+                    <button type="submit" class="btn-primary text-white font-semibold py-2 px-4 rounded-lg">Add Fixture</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <div id="enterScoreModal" class="fixed inset-0 z-50 items-center justify-center hidden modal-backdrop">
         <div class="modal-content w-full max-w-md p-6 rounded-xl shadow-lg m-4">
             <h3 class="text-xl font-bold mb-4">Enter Match Result</h3>
@@ -246,6 +314,14 @@
                         <p id="modalTeam2Name" class="font-bold"></p>
                         <p id="modalManager2Name" class="text-sm text-gray-400"></p>
                     </div>
+                </div>
+                <div class="mb-4">
+                    <label for="matchDate" class="block text-sm font-medium text-gray-300 mb-1">Match Date</label>
+                    <input type="date" id="matchDate" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="matchTime" class="block text-sm font-medium text-gray-300 mb-1">Match Time</label>
+                    <input type="time" id="matchTime" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="flex items-center justify-center space-x-4">
                     <input type="number" id="team1Score" class="w-24 text-center bg-gray-800 border border-gray-600 rounded-lg p-2 text-white text-2xl" min="0" required>
@@ -275,12 +351,11 @@
         Developed by xGHOST
     </footer>
 
-
     <script type="module">
         // Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, writeBatch, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, writeBatch, query, getDocs, deleteDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
         const firebaseConfig = {
@@ -304,6 +379,8 @@
         let teamsUnsubscribe = () => {};
         let fixturesUnsubscribe = () => {};
         let teamsCache = new Map();
+        let currentSortColumn = 'pts';
+        let currentSortDirection = 'desc';
 
         // --- UI Elements ---
         const authContainer = document.getElementById('authContainer');
@@ -320,6 +397,18 @@
         const addTeamModal = document.getElementById('addTeamModal');
         const cancelAddTeamBtn = document.getElementById('cancelAddTeam');
         const addTeamForm = document.getElementById('addTeamForm');
+
+        const editTeamModal = document.getElementById('editTeamModal');
+        const cancelEditTeamBtn = document.getElementById('cancelEditTeam');
+        const editTeamForm = document.getElementById('editTeamForm');
+
+        const addFixtureBtn = document.getElementById('addFixtureBtn'); 
+        const addFixtureModal = document.getElementById('addFixtureModal'); 
+        const cancelAddFixtureBtn = document.getElementById('cancelAddFixture'); 
+        const addFixtureForm = document.getElementById('addFixtureForm'); 
+        const fixtureTeam1Select = document.getElementById('fixtureTeam1'); 
+        const fixtureTeam2Select = document.getElementById('fixtureTeam2'); 
+        
         const pointsTableBody = document.getElementById('pointsTableBody');
         const fixturesContainer = document.getElementById('fixturesContainer');
         const generateFixturesBtn = document.getElementById('generateFixturesBtn');
@@ -368,6 +457,12 @@
             fixturesUnsubscribe();
         }
 
+        function formatDate(dateString) {
+            if (!dateString) return 'TBD';
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
         // --- Firestore Logic ---
         function setupListeners() {
             if (!userId) return;
@@ -388,6 +483,7 @@
                     teamsCache.set(doc.id, teamData);
                 });
                 renderPointsTable(teams);
+                populateTeamSelects(teams); // Populate team selects for custom fixtures
                 loadingIndicator.style.display = 'none';
                 mainContent.style.display = 'block';
             }, (error) => {
@@ -409,21 +505,31 @@
 
         // --- Rendering Logic ---
 
-        function renderPointsTable(teams) {
+        function sortTeams(teams, column, direction) {
             teams.sort((a, b) => {
-                if (b.pts !== a.pts) return b.pts - a.pts;
-                if (b.gd !== a.gd) return b.gd - a.gd;
-                if (b.gf !== a.gf) return b.gf - a.gf;
-                return a.name.localeCompare(b.name);
+                const aValue = a[column];
+                const bValue = b[column];
+
+                if (typeof aValue === 'number' && typeof bValue === 'number') {
+                    return direction === 'asc' ? aValue - bValue : bValue - aValue;
+                } else {
+                    return direction === 'asc' ? String(aValue).localeCompare(String(bValue)) : String(bValue).localeCompare(String(aValue));
+                }
             });
+            return teams;
+        }
+
+        function renderPointsTable(teams) {
+            // Apply sorting before rendering
+            let sortedTeams = sortTeams([...teams], currentSortColumn, currentSortDirection);
 
             pointsTableBody.innerHTML = '';
             if (teams.length === 0) {
-                pointsTableBody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-gray-400">No teams added yet. Add a team to get started!</td></tr>`;
+                pointsTableBody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-gray-400">No teams added yet. Add a team to get started!</td></tr>`;
                 return;
             }
 
-            teams.forEach((team, index) => {
+            sortedTeams.forEach((team, index) => {
                 const row = document.createElement('tr');
                 row.className = 'table-row border-b border-gray-700';
                 row.innerHTML = `
@@ -448,54 +554,167 @@
                     <td class="px-3 py-4 text-center">${team.ga}</td>
                     <td class="px-3 py-4 text-center">${team.gd}</td>
                     <td class="px-3 py-4 text-center font-bold text-white">${team.pts}</td>
+                    <td class="px-3 py-4 text-center">
+                        <button class="edit-team-btn btn-secondary text-xs font-semibold py-1 px-2 rounded-md mr-1" data-team-id="${team.id}">Edit</button>
+                        <button class="delete-team-btn bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1 px-2 rounded-md" data-team-id="${team.id}">Delete</button>
+                    </td>
                 `;
                 pointsTableBody.appendChild(row);
             });
+
+            // Update sort icons
+            document.querySelectorAll('.sortable .sort-icon').forEach(icon => icon.textContent = '');
+            const currentHeader = document.querySelector(`.sortable[data-sort="${currentSortColumn}"] .sort-icon`);
+            if (currentHeader) {
+                currentHeader.textContent = currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+            }
         }
         
         function renderFixtures(fixtures) {
             fixturesContainer.innerHTML = '';
             if (fixtures.length === 0) {
-                fixturesContainer.innerHTML = `<div class="text-center py-8 text-gray-400">No fixtures generated. Add teams and click "Generate Fixtures".</div>`;
+                fixturesContainer.innerHTML = `<div class="text-center py-8 text-gray-400">No fixtures generated. Add teams and click "Generate Fixtures" or "Add Custom Fixture".</div>`;
                 return;
             }
-            const fixturesByRound = fixtures.reduce((acc, fixture) => {
-                const round = fixture.round || 'Fixtures';
-                if (!acc[round]) acc[round] = [];
-                acc[round].push(fixture);
+
+            // Sort fixtures by tournament type, then round number (if available), then date, then time
+            fixtures.sort((a, b) => {
+                // Prioritize knockout, then league, then friendly
+                const typeOrder = { 'knockout': 1, 'league': 2, 'friendly': 3 };
+                const typeCompare = typeOrder[a.tournamentType] - typeOrder[b.tournamentType];
+                if (typeCompare !== 0) return typeCompare;
+
+                // Then by round number for knockout/league
+                if (a.roundNumber && b.roundNumber) {
+                    const roundCompare = a.roundNumber - b.roundNumber;
+                    if (roundCompare !== 0) return roundCompare;
+                }
+                
+                // Then by custom round name for other types or if roundNumber is same
+                const roundNameA = a.round || '';
+                const roundNameB = b.round || '';
+                const roundNameCompare = roundNameA.localeCompare(roundNameB);
+                if (roundNameCompare !== 0) return roundNameCompare;
+
+                // Finally by date and time
+                const dateA = a.date ? new Date(`${a.date}T${a.time || '00:00'}`) : new Date(0);
+                const dateB = b.date ? new Date(`${b.date}T${b.time || '00:00'}`) : new Date(0);
+                return dateA - dateB;
+            });
+
+
+            const fixturesBySection = fixtures.reduce((acc, fixture) => {
+                let sectionKey;
+                if (fixture.tournamentType === 'knockout') {
+                    sectionKey = `Knockout - Round ${fixture.roundNumber || 1}`;
+                } else if (fixture.tournamentType === 'league') {
+                    sectionKey = `League - ${fixture.round || 'Unnamed Round'}`;
+                } else { // Friendly or custom
+                    sectionKey = fixture.round || 'Friendly/Custom Matches';
+                }
+
+                if (!acc[sectionKey]) acc[sectionKey] = [];
+                acc[sectionKey].push(fixture);
                 return acc;
             }, {});
 
-            Object.keys(fixturesByRound).sort().forEach(round => {
-                const roundContainer = document.createElement('div');
-                roundContainer.className = 'space-y-3';
-                const roundTitle = document.createElement('h3');
-                roundTitle.className = 'text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-3';
-                roundTitle.textContent = round.startsWith('Round') ? round : `Round ${round}`;
-                roundContainer.appendChild(roundTitle);
-                fixturesByRound[round].forEach(fixture => {
+            // Sort section keys for consistent rendering (e.g., Knockout R1, R2, League R1, etc.)
+            const sortedSectionKeys = Object.keys(fixturesBySection).sort((a, b) => {
+                const matchA = a.match(/Knockout - Round (\d+)/);
+                const matchB = b.match(/Knockout - Round (\d+)/);
+
+                if (matchA && matchB) {
+                    return parseInt(matchA[1]) - parseInt(matchB[1]);
+                }
+                if (matchA) return -1; // Knockout rounds come first
+                if (matchB) return 1;
+
+                return a.localeCompare(b); // Alphabetical for other sections
+            });
+
+
+            sortedSectionKeys.forEach(sectionKey => {
+                const sectionContainer = document.createElement('div');
+                sectionContainer.className = 'space-y-3 mb-6'; // Added margin-bottom for separation
+                const sectionTitle = document.createElement('h3');
+                sectionTitle.className = 'text-lg font-semibold text-gray-300 border-b border-gray-700 pb-2 mb-3';
+                sectionTitle.textContent = sectionKey;
+                sectionContainer.appendChild(sectionTitle);
+
+                fixturesBySection[sectionKey].forEach(fixture => {
                     const team1 = teamsCache.get(fixture.team1Id);
                     const team2 = teamsCache.get(fixture.team2Id);
-                    if (!team1 || !team2) return;
+                    
                     const fixtureCard = document.createElement('div');
                     fixtureCard.className = 'card rounded-lg p-4 flex items-center justify-between';
+
+                    if (!team1 || !team2) {
+                        fixtureCard.classList.add('text-red-400', 'border-red-600');
+                        fixtureCard.innerHTML = `
+                            <div class="flex-1 text-center">Team Missing for fixture ${fixture.id}. (IDs: ${fixture.team1Id}, ${fixture.team2Id})</div>
+                            <button class="delete-fixture-btn bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1 px-3 rounded-md ml-4" data-fixture-id="${fixture.id}">Delete Fixture</button>
+                        `;
+                        sectionContainer.appendChild(fixtureCard);
+                        return;
+                    }
+
                     const played = fixture.played;
-                    const scoreOrTime = played ? `<div class="text-2xl font-bold">${fixture.score1} - ${fixture.score2}</div>` : `<div class="text-lg font-semibold text-blue-400">vs</div>`;
+                    const scoreOrTime = played ? 
+                        `<div class="text-2xl font-bold">${fixture.score1} - ${fixture.score2}</div>` : 
+                        `<div class="text-lg font-semibold text-blue-400">${fixture.time || 'TBD'}</div>`;
+                    
+                    const matchDateDisplay = fixture.date ? `<div class="text-xs text-gray-400 mt-1">${formatDate(fixture.date)}</div>` : '';
+
+                    let winnerDisplay = '';
+                    if (played && fixture.tournamentType === 'knockout') {
+                        if (fixture.score1 > fixture.score2) {
+                            winnerDisplay = `<div class="text-sm text-green-400 mt-1">${team1.name} Wins!</div>`;
+                        } else if (fixture.score2 > fixture.score1) {
+                            winnerDisplay = `<div class="text-sm text-green-400 mt-1">${team2.name} Wins!</div>`;
+                        } else {
+                            winnerDisplay = `<div class="text-sm text-yellow-400 mt-1">Draw (Replay/Penalties?)</div>`; // In real knockout, draws need tie-breakers
+                        }
+                    }
+
+
                     fixtureCard.innerHTML = `
                         <div class="flex items-center space-x-4 flex-1 text-right justify-end">
                             <span class="font-semibold text-lg">${team1.name}</span>
-                            <img src="${team1.logoUrl}" class="h-8 w-8 rounded-full object-contain bg-white/10 p-0.5">
+                            <img src="${team1.logoUrl}" class="h-8 w-8 rounded-full object-contain bg-white/10 p-0.5" onerror="this.onerror=null;this.src='${generateLogo(team1.name)}';">
                         </div>
-                        <div class="px-4 text-center">${scoreOrTime}</div>
+                        <div class="px-4 text-center">
+                            ${scoreOrTime}
+                            ${matchDateDisplay}
+                            ${winnerDisplay}
+                        </div>
                         <div class="flex items-center space-x-4 flex-1">
-                            <img src="${team2.logoUrl}" class="h-8 w-8 rounded-full object-contain bg-white/10 p-0.5">
+                            <img src="${team2.logoUrl}" class="h-8 w-8 rounded-full object-contain bg-white/10 p-0.5" onerror="this.onerror=null;this.src='${generateLogo(team2.name)}';">
                             <span class="font-semibold text-lg">${team2.name}</span>
                         </div>
-                        <button class="edit-score-btn btn-secondary text-xs font-semibold py-1 px-3 rounded-md ml-4" data-fixture-id="${fixture.id}">${played ? 'Edit' : 'Set Score'}</button>
+                        <div class="ml-4 flex flex-col space-y-1">
+                            <button class="edit-score-btn btn-secondary text-xs font-semibold py-1 px-3 rounded-md" data-fixture-id="${fixture.id}">${played ? 'Edit Score' : 'Set Score/Time'}</button>
+                            <button class="delete-fixture-btn bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1 px-3 rounded-md" data-fixture-id="${fixture.id}">Delete</button>
+                        </div>
                     `;
-                    roundContainer.appendChild(fixtureCard);
+                    sectionContainer.appendChild(fixtureCard);
                 });
-                fixturesContainer.appendChild(roundContainer);
+                fixturesContainer.appendChild(sectionContainer);
+            });
+        }
+
+        function populateTeamSelects(teams) {
+            fixtureTeam1Select.innerHTML = '<option value="">Select Home Team</option>';
+            fixtureTeam2Select.innerHTML = '<option value="">Select Away Team</option>';
+            teams.forEach(team => {
+                const option1 = document.createElement('option');
+                option1.value = team.id;
+                option1.textContent = team.name;
+                fixtureTeam1Select.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = team.id;
+                option2.textContent = team.name;
+                fixtureTeam2Select.appendChild(option2);
             });
         }
 
@@ -532,7 +751,7 @@
             signOut(auth);
         });
 
-        // App flow
+        // App flow - Team Management
         addTeamBtn.addEventListener('click', () => {
             addTeamModal.classList.remove('hidden'); addTeamModal.classList.add('flex');
         });
@@ -554,13 +773,164 @@
             } catch (error) { console.error("Error adding team: ", error); alert("Failed to add team."); }
         });
 
+        // Edit Team
+        pointsTableBody.addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.edit-team-btn');
+            const deleteBtn = e.target.closest('.delete-team-btn');
+
+            if (editBtn) {
+                const teamId = editBtn.dataset.teamId;
+                const teamData = teamsCache.get(teamId);
+                if (teamData) {
+                    document.getElementById('editTeamId').value = teamId;
+                    document.getElementById('editTeamName').value = teamData.name;
+                    document.getElementById('editTeamLogo').value = teamData.logoUrl;
+                    document.getElementById('editManagerName').value = teamData.managerName;
+                    document.getElementById('editManagerPic').value = teamData.managerPicUrl;
+                    editTeamModal.classList.remove('hidden');
+                    editTeamModal.classList.add('flex');
+                }
+            } else if (deleteBtn) {
+                const teamId = deleteBtn.dataset.teamId;
+                const teamName = teamsCache.get(teamId)?.name || 'this team';
+                const confirmed = await showConfirm("Delete Team?", `Are you sure you want to delete "${teamName}"? This will also delete all associated fixtures.`);
+                if (!confirmed) return;
+
+                try {
+                    const batch = writeBatch(db);
+                    const teamRef = doc(db, `users/${userId}/teams`, teamId);
+                    batch.delete(teamRef);
+
+                    // Delete associated fixtures
+                    const fixturesCollectionRef = collection(db, `users/${userId}/fixtures`);
+                    const q = query(fixturesCollectionRef, where("team1Id", "==", teamId));
+                    const q2 = query(fixturesCollectionRef, where("team2Id", "==", teamId));
+                    
+                    const [fixtures1Snap, fixtures2Snap] = await Promise.all([getDocs(q), getDocs(q2)]);
+
+                    fixtures1Snap.forEach(fixtureDoc => batch.delete(fixtureDoc.ref));
+                    fixtures2Snap.forEach(fixtureDoc => batch.delete(fixtureDoc.ref));
+                    
+                    await batch.commit();
+                    alert("Team and associated fixtures deleted successfully!");
+                } catch (error) {
+                    console.error("Error deleting team:", error);
+                    alert("Failed to delete team.");
+                }
+            }
+        });
+
+        cancelEditTeamBtn.addEventListener('click', () => {
+            editTeamModal.classList.add('hidden');
+            editTeamModal.classList.remove('flex');
+            editTeamForm.reset();
+        });
+
+        editTeamForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const teamId = document.getElementById('editTeamId').value;
+            const newName = document.getElementById('editTeamName').value.trim();
+            let newLogo = document.getElementById('editTeamLogo').value.trim();
+            const newManagerName = document.getElementById('editManagerName').value.trim();
+            let newManagerPic = document.getElementById('editManagerPic').value.trim();
+
+            if (!newLogo) newLogo = generateLogo(newName);
+
+            try {
+                const teamRef = doc(db, `users/${userId}/teams`, teamId);
+                await setDoc(teamRef, { 
+                    name: newName, 
+                    logoUrl: newLogo, 
+                    managerName: newManagerName, 
+                    managerPicUrl: newManagerPic 
+                }, { merge: true }); 
+                editTeamModal.classList.add('hidden');
+                editTeamModal.classList.remove('flex');
+                alert("Team updated successfully!");
+            } catch (error) {
+                console.error("Error updating team:", error);
+                alert("Failed to update team.");
+            }
+        });
+
+
+        // App flow - Fixture Generation & Custom Fixtures
+        addFixtureBtn.addEventListener('click', () => {
+            const teams = Array.from(teamsCache.values());
+            populateTeamSelects(teams);
+            document.getElementById('fixtureDate').valueAsDate = new Date(); 
+            addFixtureModal.classList.remove('hidden'); addFixtureModal.classList.add('flex');
+        });
+
+        cancelAddFixtureBtn.addEventListener('click', () => {
+            addFixtureModal.classList.add('hidden'); addFixtureModal.classList.remove('flex'); addFixtureForm.reset();
+        });
+
+        addFixtureForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const team1Id = document.getElementById('fixtureTeam1').value;
+            const team2Id = document.getElementById('fixtureTeam2').value;
+            const fixtureDate = document.getElementById('fixtureDate').value;
+            const fixtureTime = document.getElementById('fixtureTime').value;
+            const fixtureRound = document.getElementById('fixtureRound').value.trim() || 'Custom Match';
+
+            if (team1Id === team2Id) {
+                alert("Home Team and Away Team cannot be the same for a custom fixture (unless it's a friendly against self, which is handled by friendly generator).");
+                return;
+            }
+            if (!team1Id || !team2Id || !fixtureDate || !fixtureTime) {
+                alert("Please fill all required fields (Home Team, Away Team, Date, Time).");
+                return;
+            }
+
+            const newFixture = {
+                team1Id,
+                team2Id,
+                date: fixtureDate,
+                time: fixtureTime,
+                round: fixtureRound,
+                played: false,
+                isFriendly: true, // Custom fixtures are treated as friendly by default (do not affect standings)
+                tournamentType: 'friendly', // Explicitly set type for custom
+                roundNumber: 0 // Not relevant for custom/friendly, set to 0 or null
+            };
+
+            try {
+                const fixtureRef = doc(collection(db, `users/${userId}/fixtures`));
+                await setDoc(fixtureRef, newFixture);
+                addFixtureForm.reset();
+                addFixtureModal.classList.add('hidden');
+                addFixtureModal.classList.remove('flex');
+                alert("Custom fixture added successfully!");
+                document.getElementById('tab-fixtures').click(); 
+            } catch (error) {
+                console.error("Error adding custom fixture: ", error);
+                alert("Failed to add custom fixture.");
+            }
+        });
+
+
         generateFixturesBtn.addEventListener('click', async () => {
-             const confirmed = await showConfirm("Generate Fixtures?", "This will delete all existing fixtures and may reset scores if teams have changed. Are you sure?");
+            const confirmed = await showConfirm("Generate Fixtures?", "This will delete all existing fixtures and may reset scores if teams have changed. Are you sure?");
             if (!confirmed) return;
             const type = document.getElementById('tournamentType').value;
             const teams = Array.from(teamsCache.values());
-            if (teams.length < 2) { alert("You need at least 2 teams."); return; }
+            
+            const today = new Date();
+            const defaultDate = today.toISOString().split('T')[0]; 
+            const defaultTime = '19:00'; 
+
+            if (type === 'friendly' && teams.length < 1) { 
+                 alert("You need at least 1 team for a Friendly match.");
+                 return;
+            }
+            if (type !== 'friendly' && teams.length < 2) { 
+                alert("You need at least 2 teams for League/Knockout.");
+                return; 
+            }
+
             let newFixtures = [];
+            
             if (type === 'league') {
                 const teamIds = teams.map(t => t.id);
                 if (teamIds.length % 2 !== 0) teamIds.push(null);
@@ -568,17 +938,61 @@
                 for (let round = 0; round < numRounds; round++) {
                     for (let i = 0; i < half; i++) {
                         const team1Id = teamIds[i]; const team2Id = teamIds[teamIds.length - 1 - i];
-                        if (team1Id && team2Id) newFixtures.push({ team1Id, team2Id, played: false, round: `Round ${round + 1}` });
+                        if (team1Id && team2Id) newFixtures.push({ 
+                            team1Id, team2Id, played: false, 
+                            round: `Round ${round + 1}`, 
+                            date: defaultDate, 
+                            time: defaultTime, 
+                            isFriendly: false, 
+                            tournamentType: 'league',
+                            roundNumber: round + 1
+                        }); 
                     }
                     teamIds.splice(1, 0, teamIds.pop());
                 }
             } else if (type === 'knockout') {
                 let teamIds = teams.map(t => t.id);
+                // Shuffle teams for fair draw
                 for (let i = teamIds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [teamIds[i], teamIds[j]] = [teamIds[j], teamIds[i]]; }
-                for (let i = 0; i < teamIds.length; i += 2) {
-                    if (teamIds[i+1]) newFixtures.push({ team1Id: teamIds[i], team2Id: teamIds[i+1], played: false, round: 'Knockout Round 1' });
+                
+                let currentRoundTeams = [...teamIds];
+                let roundCounter = 1;
+
+                while (currentRoundTeams.length > 1) {
+                    let nextRoundTeams = [];
+                    for (let i = 0; i < currentRoundTeams.length; i += 2) {
+                        const team1Id = currentRoundTeams[i];
+                        const team2Id = currentRoundTeams[i + 1]; // Can be undefined for bye
+
+                        if (team2Id) { // Regular match
+                            newFixtures.push({
+                                team1Id, team2Id, played: false,
+                                round: `Round of ${currentRoundTeams.length / 2}`,
+                                roundNumber: roundCounter,
+                                date: defaultDate,
+                                time: defaultTime,
+                                isFriendly: false,
+                                tournamentType: 'knockout'
+                            });
+                        } else { // Bye
+                            nextRoundTeams.push(team1Id);
+                            alert(`${teamsCache.get(team1Id).name} gets a bye in Round ${roundCounter}!`);
+                        }
+                    }
+                    currentRoundTeams = nextRoundTeams; // Teams that got byes will be in the next round
+                    roundCounter++;
+                }
+
+            } else if (type === 'friendly') {
+                let teamIds = teams.map(t => t.id);
+                if (teamIds.length === 1) {
+                    newFixtures.push({ team1Id: teamIds[0], team2Id: teamIds[0], played: false, round: 'Friendly Match', date: defaultDate, time: defaultTime, isFriendly: true, tournamentType: 'friendly', roundNumber: 0 }); 
+                } else if (teamIds.length >= 2) {
+                    const shuffledTeams = teamIds.sort(() => 0.5 - Math.random());
+                    newFixtures.push({ team1Id: shuffledTeams[0], team2Id: shuffledTeams[1], played: false, round: 'Friendly Match', date: defaultDate, time: defaultTime, isFriendly: true, tournamentType: 'friendly', roundNumber: 0 });
                 }
             }
+
             try {
                 const fixturesCollectionRef = collection(db, `users/${userId}/fixtures`);
                 const oldFixturesSnapshot = await getDocs(fixturesCollectionRef);
@@ -603,26 +1017,48 @@
             } catch (error) { console.error("Error resetting tournament:", error); alert("Failed to reset tournament."); }
         });
 
-        fixturesContainer.addEventListener('click', (e) => {
+        // App flow - Score Entry and Fixture Deletion
+        fixturesContainer.addEventListener('click', async (e) => {
             const button = e.target.closest('.edit-score-btn');
-            if (!button) return;
-            const fixtureId = button.dataset.fixtureId;
-            const fixtureDocRef = doc(db, `users/${userId}/fixtures`, fixtureId);
-            getDoc(fixtureDocRef).then(docSnap => {
+            const deleteBtn = e.target.closest('.delete-fixture-btn');
+
+            if (button) {
+                const fixtureId = button.dataset.fixtureId;
+                const fixtureDocRef = doc(db, `users/${userId}/fixtures`, fixtureId);
+                const docSnap = await getDoc(fixtureDocRef);
                 if (docSnap.exists()) {
-                    const fixture = docSnap.data(); const team1 = teamsCache.get(fixture.team1Id); const team2 = teamsCache.get(fixture.team2Id);
+                    const fixture = docSnap.data(); 
+                    const team1 = teamsCache.get(fixture.team1Id); 
+                    const team2 = teamsCache.get(fixture.team2Id);
+                    
                     document.getElementById('fixtureId').value = fixtureId;
-                    document.getElementById('modalTeam1Name').textContent = team1.name;
-                    document.getElementById('modalTeam2Name').textContent = team2.name;
-                    document.getElementById('modalManager1Name').textContent = team1.managerName || 'N/A';
-                    document.getElementById('modalManager2Name').textContent = team2.managerName || 'N/A';
-                    document.getElementById('modalTeam1Logo').src = team1.logoUrl;
-                    document.getElementById('modalTeam2Logo').src = team2.logoUrl;
+                    document.getElementById('modalTeam1Name').textContent = team1 ? team1.name : 'Unknown Team';
+                    document.getElementById('modalTeam2Name').textContent = team2 ? team2.name : 'Unknown Team';
+                    document.getElementById('modalManager1Name').textContent = team1 ? (team1.managerName || 'N/A') : '';
+                    document.getElementById('modalManager2Name').textContent = team2 ? (team2.managerName || 'N/A') : '';
+                    document.getElementById('modalTeam1Logo').src = team1 ? team1.logoUrl : 'https://placehold.co/64x64/374151/FFFFFF?text=NA';
+                    document.getElementById('modalTeam2Logo').src = team2 ? team2.logoUrl : 'https://placehold.co/64x64/374151/FFFFFF?text=NA';
+
                     document.getElementById('team1Score').value = fixture.played ? fixture.score1 : '';
                     document.getElementById('team2Score').value = fixture.played ? fixture.score2 : '';
+                    document.getElementById('matchDate').value = fixture.date || ''; 
+                    document.getElementById('matchTime').value = fixture.time || ''; 
+                    
                     enterScoreModal.classList.remove('hidden'); enterScoreModal.classList.add('flex');
                 }
-            });
+            } else if (deleteBtn) {
+                const fixtureId = deleteBtn.dataset.fixtureId;
+                const confirmed = await showConfirm("Delete Fixture?", "Are you sure you want to delete this fixture? If it was a league/knockout match that affected standings, you may need to manually correct team stats.");
+                if (!confirmed) return;
+
+                try {
+                    await deleteDoc(doc(db, `users/${userId}/fixtures`, fixtureId));
+                    alert("Fixture deleted successfully!");
+                } catch (error) {
+                    console.error("Error deleting fixture:", error);
+                    alert("Failed to delete fixture.");
+                }
+            }
         });
 
         cancelScoreBtn.addEventListener('click', () => {
@@ -634,33 +1070,263 @@
             const fixtureId = document.getElementById('fixtureId').value;
             const score1 = parseInt(document.getElementById('team1Score').value);
             const score2 = parseInt(document.getElementById('team2Score').value);
+            const matchDate = document.getElementById('matchDate').value;
+            const matchTime = document.getElementById('matchTime').value; 
+
             const fixtureDocRef = doc(db, `users/${userId}/fixtures`, fixtureId);
             const fixtureSnap = await getDoc(fixtureDocRef);
-            if (!fixtureSnap.exists()) return;
-            const fixture = fixtureSnap.data();
-            const team1Ref = doc(db, `users/${userId}/teams`, fixture.team1Id); const team2Ref = doc(db, `users/${userId}/teams`, fixture.team2Id);
-            const [team1Snap, team2Snap] = await Promise.all([getDoc(team1Ref), getDoc(team2Ref)]);
-            if (!team1Snap.exists() || !team2Snap.exists()) return;
-            const team1Data = team1Snap.data(); const team2Data = team2Snap.data();
-            const batch = writeBatch(db);
-            if (fixture.played) {
-                const oldScore1 = fixture.score1; const oldScore2 = fixture.score2;
-                team1Data.gf -= oldScore1; team1Data.ga -= oldScore2; team2Data.gf -= oldScore2; team2Data.ga -= oldScore1;
-                if (oldScore1 > oldScore2) { team1Data.w -= 1; team1Data.pts -= 3; team2Data.l -= 1; } 
-                else if (oldScore2 > oldScore1) { team2Data.w -= 1; team2Data.pts -= 3; team1Data.l -= 1; } 
-                else { team1Data.d -= 1; team1Data.pts -= 1; team2Data.d -= 1; team2Data.pts -= 1; }
-                team1Data.mp -= 1; team2Data.mp -= 1;
+            if (!fixtureSnap.exists()) {
+                alert("Fixture not found!");
+                return;
             }
-            team1Data.mp += 1; team2Data.mp += 1; team1Data.gf += score1; team1Data.ga += score2; team2Data.gf += score2; team2Data.ga += score1;
-            if (score1 > score2) { team1Data.w += 1; team1Data.pts += 3; team2Data.l += 1; } 
-            else if (score2 > score1) { team2Data.w += 1; team2Data.pts += 3; team1Data.l += 1; } 
-            else { team1Data.d += 1; team1Data.pts += 1; team2Data.d += 1; team2Data.pts += 1; }
-            team1Data.gd = team1Data.gf - team1Data.ga; team2Data.gd = team2Data.gf - team2Data.ga;
-            batch.update(team1Ref, team1Data); batch.update(team2Ref, team2Data); batch.update(fixtureDocRef, { played: true, score1, score2 });
-            try { await batch.commit(); enterScoreForm.reset(); enterScoreModal.classList.add('hidden'); enterScoreModal.classList.remove('flex'); } 
-            catch (error) { console.error("Error saving score: ", error); alert("Failed to save score."); }
+            const fixture = fixtureSnap.data();
+
+            const team1Ref = doc(db, `users/${userId}/teams`, fixture.team1Id); 
+            const team2Ref = doc(db, `users/${userId}/teams`, fixture.team2Id);
+            
+            const [team1Snap, team2Snap] = await Promise.all([getDoc(team1Ref), getDoc(team2Ref)]);
+            if (!team1Snap.exists() || !team2Snap.exists()) {
+                alert("One or both teams for this fixture no longer exist. Cannot update scores.");
+                return;
+            }
+
+            const team1Data = team1Snap.data(); 
+            const team2Data = team2Snap.data();
+            
+            const batch = writeBatch(db);
+            
+            const isFriendly = fixture.isFriendly; 
+            const tournamentType = fixture.tournamentType;
+
+            // Only update scores/MP/W/D/L/GF/GA/GD if the match is not a friendly
+            if (!isFriendly) {
+                if (fixture.played) {
+                    // Revert old stats
+                    const oldScore1 = fixture.score1; 
+                    const oldScore2 = fixture.score2;
+                    team1Data.gf -= oldScore1; team1Data.ga -= oldScore2; 
+                    team2Data.gf -= oldScore2; team2Data.ga -= oldScore1;
+                    if (oldScore1 > oldScore2) { 
+                        team1Data.w -= 1; team1Data.pts -= 3; 
+                        if (tournamentType === 'league') team2Data.l -= 1; // Only track losses for league
+                    } else if (oldScore2 > oldScore1) { 
+                        team2Data.w -= 1; team2Data.pts -= 3; 
+                        if (tournamentType === 'league') team1Data.l -= 1; // Only track losses for league
+                    } else { 
+                        team1Data.d -= 1; team1Data.pts -= 1; 
+                        team2Data.d -= 1; team2Data.pts -= 1; 
+                    }
+                    if (tournamentType === 'league') {
+                        team1Data.mp -= 1; team2Data.mp -= 1;
+                    }
+                }
+                
+                // Apply new stats if scores are valid
+                if (score1 !== '' && score2 !== '') {
+                    if (tournamentType === 'league') {
+                        team1Data.mp += 1; team2Data.mp += 1; 
+                    }
+                    team1Data.gf += score1; team1Data.ga += score2; 
+                    team2Data.gf += score2; team2Data.ga += score1;
+                    if (score1 > score2) { 
+                        team1Data.w += 1; team1Data.pts += 3; 
+                        if (tournamentType === 'league') team2Data.l += 1; 
+                    } else if (score2 > score1) { 
+                        team2Data.w += 1; team2Data.pts += 3; 
+                        if (tournamentType === 'league') team1Data.l += 1; 
+                    } else { 
+                        // For knockout, a draw means tie-breaker, which isn't modeled yet.
+                        // For now, treat as draw for stats, but alert user for knockout.
+                        team1Data.d += 1; team1Data.pts += 1; 
+                        team2Data.d += 1; team2Data.pts += 1; 
+                        if (tournamentType === 'knockout') {
+                            alert("Knockout match ended in a draw! This simple manager doesn't handle penalty shootouts or replays. The match will count as a draw, and the system won't automatically advance a winner for the next round. You may need to manually create the next fixture.");
+                        }
+                    }
+                }
+
+                team1Data.gd = team1Data.gf - team1Data.ga; 
+                team2Data.gd = team2Data.gf - team2Data.ga;
+                batch.update(team1Ref, team1Data);
+                batch.update(team2Ref, team2Data);
+            }
+
+            batch.update(fixtureDocRef, { 
+                played: (score1 !== '' && score2 !== ''), 
+                score1, 
+                score2, 
+                date: matchDate, 
+                time: matchTime 
+            }); 
+
+            try { 
+                await batch.commit(); 
+                enterScoreForm.reset(); 
+                enterScoreModal.classList.add('hidden'); 
+                enterScoreModal.classList.remove('flex'); 
+                
+                // --- Knockout Logic: Check for round completion and generate next round ---
+                if (tournamentType === 'knockout' && score1 !== '' && score2 !== '') {
+                    // Only proceed if a definitive winner exists for knockout (no draws)
+                    if (score1 !== score2) {
+                        const winnerId = score1 > score2 ? fixture.team1Id : fixture.team2Id;
+                        await checkForKnockoutRoundCompletion(fixture.roundNumber, winnerId);
+                    } else {
+                        // If it's a draw in knockout, we cannot auto-advance. User needs to intervene.
+                        console.warn("Knockout match ended in a draw, skipping auto-generation of next round.");
+                    }
+                }
+
+            } catch (error) { 
+                console.error("Error saving score/time/date: ", error); 
+                alert("Failed to save score, time, or date."); 
+            }
         });
-        
+
+        async function checkForKnockoutRoundCompletion(currentRoundNumber) {
+            const fixturesCollectionRef = collection(db, `users/${userId}/fixtures`);
+            const q = query(fixturesCollectionRef, 
+                            where("tournamentType", "==", "knockout"), 
+                            where("roundNumber", "==", currentRoundNumber), 
+                            where("played", "==", false));
+            const unplayedFixturesSnap = await getDocs(q);
+
+            if (unplayedFixturesSnap.empty) {
+                // All matches in the current knockout round are played
+                console.log(`Knockout Round ${currentRoundNumber} complete!`);
+
+                const qPlayed = query(fixturesCollectionRef, 
+                                      where("tournamentType", "==", "knockout"), 
+                                      where("roundNumber", "==", currentRoundNumber), 
+                                      where("played", "==", true));
+                const playedFixturesSnap = await getDocs(qPlayed);
+                const winners = [];
+
+                playedFixturesSnap.forEach(doc => {
+                    const fixtureData = doc.data();
+                    if (fixtureData.score1 > fixtureData.score2) {
+                        winners.push(fixtureData.team1Id);
+                    } else if (fixtureData.score2 > fixtureData.score1) {
+                        winners.push(fixtureData.team2Id);
+                    }
+                    // Draws are handled by an alert in enterScoreForm; if a draw exists, it won't be pushed as a winner.
+                    // This means if a knockout match is a draw, it stops progression.
+                });
+
+                if (winners.length === 0 && playedFixturesSnap.empty) {
+                    alert("No winners found in the completed round. Tournament cannot proceed.");
+                    return;
+                }
+
+                if (winners.length === 1) {
+                    const finalWinnerTeam = teamsCache.get(winners[0]);
+                    alert(`Tournament Winner: ${finalWinnerTeam ? finalWinnerTeam.name : 'Unknown Team'}!`);
+                    return;
+                }
+                
+                // Add any teams that had a bye in the previous round to the current winners
+                const prevRoundNumber = currentRoundNumber - 1;
+                if (prevRoundNumber > 0) {
+                    const qPrevRoundByes = query(fixturesCollectionRef, 
+                        where("tournamentType", "==", "knockout"),
+                        where("roundNumber", "==", prevRoundNumber));
+                    
+                    const prevRoundFixturesSnap = await getDocs(qPrevRoundByes);
+                    const teamsInPrevRound = new Set();
+                    prevRoundFixturesSnap.forEach(doc => {
+                        const data = doc.data();
+                        teamsInPrevRound.add(data.team1Id);
+                        teamsInPrevRound.add(data.team2Id);
+                    });
+
+                    // Find teams that were supposed to play but didn't have a match (byes)
+                    const allTeams = Array.from(teamsCache.keys());
+                    const byesFromPreviousRound = allTeams.filter(teamId => 
+                        !teamsInPrevRound.has(teamId) && // Not in previous round's matches
+                        winners.includes(teamId) // But *was* considered a winner in the previous calculation (this is getting tricky with byes)
+                    );
+                    // A simpler way to handle byes: when generating first round, if a team gets a bye, 
+                    // add it to a temporary list. When generating next round, add those byes directly.
+                    // For now, let's assume `winners` array correctly reflects teams advancing, including byes if they were pre-determined to advance.
+                    // This current model doesn't explicitly store byes for easy retrieval.
+                    // The initial generation creates a "nextRoundTeams" for byes, those are lost.
+                    // A proper bye system might need a separate 'tournament_state' document.
+                }
+
+
+                await generateKnockoutNextRound(winners, currentRoundNumber + 1);
+            }
+        }
+
+
+        async function generateKnockoutNextRound(previousRoundWinners, nextRoundNumber) {
+            const batch = writeBatch(db);
+            const fixturesCollectionRef = collection(db, `users/${userId}/fixtures`);
+            const today = new Date();
+            const defaultDate = today.toISOString().split('T')[0]; 
+            const defaultTime = '19:00';
+
+            let teamsToAdvance = [...previousRoundWinners];
+            // Shuffle for fair draw
+            for (let i = teamsToAdvance.length - 1; i > 0; i--) { 
+                const j = Math.floor(Math.random() * (i + 1)); 
+                [teamsToAdvance[i], teamsToAdvance[j]] = [teamsToAdvance[j], teamsToAdvance[i]]; 
+            }
+
+            let nextRoundFixtures = [];
+            let byesForNextRound = [];
+
+            if (teamsToAdvance.length % 2 !== 0 && teamsToAdvance.length > 1) {
+                // One team gets a bye if odd number of teams for next round, but not if it's the final
+                const byeTeamId = teamsToAdvance.pop(); // Take one team for bye
+                byesForNextRound.push(byeTeamId);
+                alert(`${teamsCache.get(byeTeamId).name} gets a bye to Round ${nextRoundNumber}!`);
+            }
+            
+            for (let i = 0; i < teamsToAdvance.length; i += 2) {
+                const team1Id = teamsToAdvance[i];
+                const team2Id = teamsToAdvance[i + 1];
+
+                if (team1Id && team2Id) {
+                    nextRoundFixtures.push({
+                        team1Id, team2Id, played: false,
+                        round: `Round of ${teamsToAdvance.length / 2}`, // E.g., Round of 8, Round of 4
+                        roundNumber: nextRoundNumber,
+                        date: defaultDate,
+                        time: defaultTime,
+                        isFriendly: false,
+                        tournamentType: 'knockout'
+                    });
+                }
+            }
+
+            if (nextRoundFixtures.length === 0 && byesForNextRound.length === 1) {
+                // Only one team left and it got a bye, meaning it's the winner
+                const finalWinnerTeam = teamsCache.get(byesForNextRound[0]);
+                alert(`Tournament Winner: ${finalWinnerTeam ? finalWinnerTeam.name : 'Unknown Team'}!`);
+                return;
+            } else if (nextRoundFixtures.length === 0 && byesForNextRound.length === 0) {
+                // Should not happen if previous checks were good, but as a safeguard
+                alert("No more matches can be generated. Tournament might be over or stuck.");
+                return;
+            }
+
+            nextRoundFixtures.forEach(fixture => {
+                const fixtureRef = doc(collection(db, `users/${userId}/fixtures`));
+                batch.set(fixtureRef, fixture);
+            });
+
+            try {
+                await batch.commit();
+                alert(`Round ${nextRoundNumber} fixtures generated successfully!`);
+            } catch (error) {
+                console.error("Error generating next knockout round fixtures:", error);
+                alert("Failed to generate next knockout round fixtures.");
+            }
+        }
+
+
+        // Tab switching
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('text-white', 'border-blue-500'); btn.classList.add('text-gray-400', 'border-transparent'); });
@@ -669,6 +1335,21 @@
                 document.getElementById(`pane-${button.id.split('-')[1]}`).classList.remove('hidden');
             });
         });
+
+        // Points table sorting
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.dataset.sort;
+                if (currentSortColumn === column) {
+                    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSortColumn = column;
+                    currentSortDirection = 'desc'; 
+                }
+                renderPointsTable(Array.from(teamsCache.values()));
+            });
+        });
+
 
         // --- App Initialization ---
         onAuthStateChanged(auth, (user) => {
